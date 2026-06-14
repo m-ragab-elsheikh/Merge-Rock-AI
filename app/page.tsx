@@ -133,7 +133,11 @@ setState({
 
   <button
     onClick={() => performMove("UP")}
-    className="bg-slate-700 hover:bg-slate-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+    className={`${
+  solverResult?.bestMove === "UP"
+    ? "bg-green-600 ring-2 ring-green-300 scale-105"
+    : "bg-slate-700 hover:bg-slate-600"
+} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
   >
     ⬆ UP
   </button>
@@ -141,14 +145,22 @@ setState({
   <div className="flex gap-2">
     <button
       onClick={() => performMove("LEFT")}
-      className="bg-slate-700 hover:bg-slate-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+      className={`${
+  solverResult?.bestMove === "LEFT"
+    ? "bg-green-600 ring-2 ring-green-300 scale-105"
+    : "bg-slate-700 hover:bg-slate-600"
+} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
     >
       ⬅ LEFT
     </button>
 
     <button
       onClick={() => performMove("RIGHT")}
-      className="bg-slate-700 hover:bg-slate-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+      className={`${
+  solverResult?.bestMove === "RIGHT"
+    ? "bg-green-600 ring-2 ring-green-300 scale-105"
+    : "bg-slate-700 hover:bg-slate-600"
+} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
     >
       ➡ RIGHT
     </button>
@@ -156,7 +168,12 @@ setState({
 
   <button
     onClick={() => performMove("DOWN")}
-    className="bg-slate-700 hover:bg-slate-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+    className={`${
+  solverResult?.bestMove === "DOWN"
+    ? "bg-green-600 ring-2 ring-green-300 scale-105"
+    : "bg-slate-700 hover:bg-slate-600"
+} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
+
   >
     ⬇ DOWN
   </button>
