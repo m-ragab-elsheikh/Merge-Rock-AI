@@ -88,6 +88,15 @@ mobility =
   board[3][0],
   board[3][3],
 ];
+let stuckPenalty = 0;
+
+if (mobility === 0) {
+  stuckPenalty = -50000;
+} else if (mobility === 1) {
+  stuckPenalty = -15000;
+} else if (mobility === 2) {
+  stuckPenalty = -5000;
+}
 
 if (
   corners.some(
@@ -160,6 +169,7 @@ const score =
   cornerBonus +
   clusterBonus +
   snakeBonus +
+  stuckPenalty +
   gameOverPenalty;
 
  scoreCache.set(

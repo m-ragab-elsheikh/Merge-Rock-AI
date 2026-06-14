@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Board } from "@/components/Board";
 import { MoveRanking } from "@/components/MoveRanking";
 import { DangerMeter } from "@/components/DangerMeter";
-import { EmergencySync } from "@/components/EmergencySync";
 import { GameState, TileValue, SolverResult } from "@/types";
 import { getBestMove } from "@/lib/solver";
 import { initialState, addMoveToHistory, undoLast } from "@/lib/history";
@@ -99,19 +98,6 @@ setState({
   setError("");
 }, []);
 
-  const handleSync = useCallback(
-    (input: string) => {
-      const { board, error: parseError } = parseBoardFromString(input);
-      if (parseError) {
-        setError(parseError);
-        return;
-      }
-      // Clear history and set board
-      setState({ board, history: [] });
-      setError("");
-    },
-    [setState]
-  );
   
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
@@ -208,7 +194,6 @@ setState({
         <MoveRanking result={solverResult} onMoveClick={performMove} />
       )}
       <DangerMeter level={solverResult?.dangerLevel || "SAFE"} />
-      <EmergencySync onSync={handleSync} />
       {error && (
         <div className="bg-red-900/80 text-red-200 px-4 py-2 rounded-lg text-sm max-w-xs w-full text-center">
           {error}
