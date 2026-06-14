@@ -5,27 +5,47 @@ export function evaluateDanger(board: Board): DangerLevel {
   const emptyCells = countEmptyCells(board);
   const moves = getPossibleMoves(board);
   const mergeCount = countPossibleMerges(board);
+  const maxTile = Math.max(
+  ...board.flat().map(Number)
+);
+
+const corners = [
+  board[0][0],
+  board[0][3],
+  board[3][0],
+  board[3][3],
+];
+
+const maxTileInCorner =
+  corners.some(
+    (corner) => Number(corner) === maxTile
+  );
+
+  if (
+    moves.length === 0 &&
+    mergeCount === 0
+  ) {
+    return "CRITICAL";
+  }
 
 if (
-  emptyCells === 0 &&
+  emptyCells <= 1 ||
+  moves.length <= 1 ||
+  !maxTileInCorner ||
   mergeCount === 0
-) {
-  return "CRITICAL";
-}
-
-if (
-  emptyCells <= 2
 ) {
   return "HIGH_RISK";
 }
 
 if (
-  emptyCells <= 5
+  emptyCells <= 4 ||
+  moves.length <= 2 ||
+  mergeCount <= 1
 ) {
   return "MEDIUM";
 }
 
-return "SAFE";
+  return "SAFE";
 }
 
 function countPossibleMerges(board: Board): number {

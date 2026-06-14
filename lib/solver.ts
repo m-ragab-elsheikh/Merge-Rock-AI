@@ -199,6 +199,18 @@ const futureMoves = DIRECTIONS
 
 const futureScore =
   scoreBoard(future.newBoard);
+const emptyCells =
+  future.newBoard
+    .flat()
+    .filter(v => v === 0)
+    .length;
+
+const adaptiveDepth =
+  emptyCells <= 2
+    ? 4
+    : emptyCells <= 5
+    ? 3
+    : 2;
 
 const thirdMoves = DIRECTIONS
   .map((thirdDir) => {
@@ -215,9 +227,43 @@ const thirdMoves = DIRECTIONS
       return null;
     }
 
+const thirdScore =
+  scoreBoard(third.newBoard);
+
+const fourthMoves = DIRECTIONS
+  .map((fourthDir) => {
+    const fourth =
+      applyMove(
+        third.newBoard,
+        fourthDir
+      );
+
+    if (
+      !fourth.moved &&
+      !fourth.merged
+    ) {
+      return null;
+    }
+
     return scoreBoard(
-      third.newBoard
+      fourth.newBoard
     );
+  })
+  .filter(
+    (v): v is number =>
+      v !== null
+  );
+
+if (
+  fourthMoves.length > 0
+) {
+  return (
+    thirdScore +
+    Math.max(...fourthMoves) * 0.10
+  );
+}
+
+return thirdScore;
   })
   .filter(
     (v): v is number =>
@@ -227,10 +273,18 @@ const thirdMoves = DIRECTIONS
 if (
   thirdMoves.length > 0
 ) {
-  return (
-    futureScore +
-    Math.max(...thirdMoves) * 0.15
-  );
+const depthWeight =
+  adaptiveDepth === 4
+    ? 0.30
+    : adaptiveDepth === 3
+    ? 0.15
+    : 0.05;
+
+return (
+  futureScore +
+  Math.max(...thirdMoves) *
+    depthWeight
+);
 }
 
 return futureScore;

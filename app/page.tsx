@@ -15,11 +15,16 @@ import { parseBoardFromString } from "@/lib/emergencySync";
 const STORAGE_KEY = "merge-solver-ai-state";
 
 export default function HomePage() {
-  const [state, setState] = useState<GameState>(
+const [state, setState] = useState<GameState>(
   initialState()
 );
-  const [solverResult, setSolverResult] = useState<SolverResult | null>(null);
-  const [error, setError] = useState("");
+
+const [solverResult, setSolverResult] =
+  useState<SolverResult | null>(null);
+
+const [error, setError] = useState("");
+
+
 
   // Load from localStorage
   useEffect(() => {
@@ -67,6 +72,7 @@ export default function HomePage() {
     [state]
   );
 
+
   const handleUndo = useCallback(() => {
     const previous = undoLast(state);
     if (previous) {
@@ -76,6 +82,22 @@ export default function HomePage() {
       setError("Nothing to undo.");
     }
   }, [state]);
+
+  const handleClearBoard = useCallback(() => {
+  const emptyBoard = [
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+  [0, 0, 0, 0],
+] as any;
+
+setState({
+  board: emptyBoard,
+  history: [],
+});
+
+  setError("");
+}, []);
 
   const handleSync = useCallback(
     (input: string) => {
@@ -90,10 +112,22 @@ export default function HomePage() {
     },
     [setState]
   );
-
+  
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 gap-6">
-      <h1 className="text-3xl font-bold text-white">Merge Solver AI</h1>
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
+<div className="text-center mb-2">
+  <img
+    src="/img/Mahmoud_Image.jpg"
+    alt="Merge Rock AI"
+    className="w-24 h-24 object-contain mx-auto"
+  />
+  <h1 className="text-3xl font-bold text-yellow-400 mt-2">
+    Merge Rock AI
+  </h1>
+  <p className="text-sm text-slate-400 mt-1">
+    Rock Animal Merge Event Helper & AI Solver
+  </p>
+</div>
       <Board
   board={state.board}
   bestMove={solverResult?.bestMove}
@@ -142,7 +176,7 @@ export default function HomePage() {
   </button>
 
 </div>
-<div className="flex justify-center mt-3">
+<div className="flex justify-center gap-4 mt-3">
   <button
     onClick={handleUndo}
     disabled={state.history.length === 0}
@@ -162,8 +196,14 @@ export default function HomePage() {
   >
     ↶ Undo
   </button>
-</div>
+  <button
+  onClick={handleClearBoard}
+  className="bg-red-700 hover:bg-red-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+>
+  🧹 Clear
+</button>
   
+</div>
       {solverResult && (
         <MoveRanking result={solverResult} onMoveClick={performMove} />
       )}
