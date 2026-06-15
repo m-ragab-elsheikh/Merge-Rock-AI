@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -103,7 +104,12 @@ setState({
   solverResult.rankings.length > 0;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
+    <  main
+    
+  className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6"
+>
+
+
 <div className="text-center mb-2">
   <img
     src="/img/Mahmoud_Image.jpg"
@@ -117,21 +123,21 @@ setState({
     Rock Animal Merge Event Helper & AI Solver
   </p>
 </div>
-      <Board
-  board={state.board}
-  bestMove={solverResult?.bestMove}
-  onCellEdit={(row, col, value) => {
-    const newBoard =
-      state.board.map((r) => [...r]);
+  <Board
+    board={state.board}
+    bestMove={solverResult?.bestMove}
+    onCellEdit={(row, col, value) => {
+      const newBoard =
+        state.board.map((r) => [...r]);
 
-    newBoard[row][col] = value as any;
+      newBoard[row][col] = value as any;
 
-    setState((prev) => ({
-      ...prev,
-      board: newBoard,
-    }));
-  }}
-/>
+      setState((prev) => ({
+        ...prev,
+        board: newBoard,
+      }));
+    }}
+  />
 <div className="flex flex-col items-center gap-2">
 
   <button

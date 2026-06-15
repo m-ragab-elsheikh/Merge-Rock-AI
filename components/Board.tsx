@@ -118,11 +118,40 @@ const value =
         }
       }}
     />
-  ) : cell !== 0 ? (
-    cell
-  ) : (
-    ""
-  )}
+) : cell !== 0 ? (
+<div className="relative flex items-center justify-center h-full">
+  <img
+    src={`/img/animals/${cell}.png`}
+    alt={`Level ${cell}`}
+    className="w-10 h-10 object-contain"
+  />
+
+ <div
+  className="
+    absolute
+    bottom-1
+    left-1/2
+    -translate-x-1/2
+    bg-slate-900
+    border
+    border-slate-600
+    text-white
+    text-[10px]
+    font-bold
+    rounded-full
+    w-5
+    h-5
+    flex
+    items-center
+    justify-center
+  "
+>
+  {cell}
+</div>
+</div>
+) : (
+  ""
+)}
 </div>
           );
         })
