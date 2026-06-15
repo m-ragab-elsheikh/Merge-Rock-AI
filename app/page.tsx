@@ -98,7 +98,10 @@ setState({
   setError("");
 }, []);
 
-  
+  const hasValidMove =
+  solverResult &&
+  solverResult.rankings.length > 0;
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
 <div className="text-center mb-2">
@@ -133,11 +136,15 @@ setState({
 
   <button
     onClick={() => performMove("UP")}
+    disabled={!hasValidMove}
     className={`${
-  solverResult?.bestMove === "UP"
+ 
+      solverResult &&
+solverResult.rankings.length > 0 &&
+solverResult.bestMove === "UP"
     ? "bg-green-600 ring-2 ring-green-300 scale-105"
     : "bg-slate-700 hover:bg-slate-600"
-} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
+} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
   >
     ⬆ UP
   </button>
@@ -145,22 +152,28 @@ setState({
   <div className="flex gap-2">
     <button
       onClick={() => performMove("LEFT")}
+      disabled={!hasValidMove}
       className={`${
-  solverResult?.bestMove === "LEFT"
+  solverResult &&
+  solverResult.rankings.length > 0 &&
+  solverResult.bestMove === "LEFT"
     ? "bg-green-600 ring-2 ring-green-300 scale-105"
     : "bg-slate-700 hover:bg-slate-600"
-} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
+} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       ⬅ LEFT
     </button>
 
     <button
       onClick={() => performMove("RIGHT")}
+      disabled={!hasValidMove}
       className={`${
-  solverResult?.bestMove === "RIGHT"
+  solverResult &&
+  solverResult.rankings.length > 0 &&
+  solverResult.bestMove === "RIGHT"
     ? "bg-green-600 ring-2 ring-green-300 scale-105"
     : "bg-slate-700 hover:bg-slate-600"
-} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
+} text-white px-4 py-3 rounded-lg font-semibold transition-all  disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       ➡ RIGHT
     </button>
@@ -168,11 +181,15 @@ setState({
 
   <button
     onClick={() => performMove("DOWN")}
+    disabled={!hasValidMove}
     className={`${
-  solverResult?.bestMove === "DOWN"
+      
+  solverResult &&
+  solverResult.rankings.length > 0 &&
+  solverResult.bestMove === "DOWN"
     ? "bg-green-600 ring-2 ring-green-300 scale-105"
     : "bg-slate-700 hover:bg-slate-600"
-} text-white px-4 py-3 rounded-lg font-semibold transition-all`}
+} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
 
   >
     ⬇ DOWN

@@ -56,7 +56,8 @@ const maxScore = Math.max(
   <button
     onClick={() => onMoveClick(mv.direction)}
     className={`w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-      mv.direction === result.bestMove
+      result.rankings.length > 0 &&
+mv.direction === result.bestMove
         ? "bg-green-600 text-white"
         : "bg-slate-700 text-slate-200 hover:bg-slate-600"
     }`}
