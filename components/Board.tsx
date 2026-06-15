@@ -123,7 +123,7 @@ const value =
   <img
     src={`/img/animals/${cell}.png`}
     alt={`Level ${cell}`}
-    className="w-10 h-10 object-contain"
+    className="w-12 h-12 object-contain"
   />
 
  <div
