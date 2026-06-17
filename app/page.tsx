@@ -1,16 +1,18 @@
 
 "use client";
-
+import {
+  debugBoardV2,
+  compareBoardsV2
+} from "@/lib/solverV2";
 import { useState, useEffect, useCallback } from "react";
 import { Board } from "@/components/Board";
-import { MoveRanking } from "@/components/MoveRanking";
-import { DangerMeter } from "@/components/DangerMeter";
 import { GameState, TileValue, SolverResult } from "@/types";
 import { getBestMove } from "@/lib/solver";
 import { initialState, addMoveToHistory, undoLast } from "@/lib/history";
 import { applyMove } from "@/lib/merge";
 import { addTile } from "@/lib/addTile";
 import { parseBoardFromString } from "@/lib/emergencySync";
+import { getBestMoveV2 } from "@/lib/solverV2";
 
 const STORAGE_KEY = "merge-solver-ai-state";
 
@@ -23,11 +25,40 @@ const [solverResult, setSolverResult] =
   useState<SolverResult | null>(null);
 
 const [error, setError] = useState("");
+const [gameLog, setGameLog] = useState<any[]>([]);
 
 
 
   // Load from localStorage
   useEffect(() => {
+    const boardA = [
+ [9,8,7,6],
+ [1,2,3,4],
+ [1,2,3,4],
+ [1,2,3,4]
+] as any;
+
+const boardB =[
+ [9,8,0,0],
+ [0,0,0,0],
+ [0,0,0,0],
+ [0,0,0,0]
+] as any;
+
+console.log(
+  "V2 COMPARE",
+  compareBoardsV2(boardA, boardB)
+);
+
+console.log(
+  "V2 A",
+  debugBoardV2(boardA)
+);
+
+console.log(
+  "V2 B",
+  debugBoardV2(boardB)
+);
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -51,6 +82,13 @@ const [error, setError] = useState("");
     if (state.board) {
       const result = getBestMove(state.board);
       setSolverResult(result);
+      const resultV2 =
+  getBestMoveV2(state.board);
+
+console.log(
+  "V2 MOVE",
+  resultV2
+);
     }
   }, [state.board]);
 
@@ -67,6 +105,24 @@ const [error, setError] = useState("");
         `MOVE_${direction}` as "MOVE_UP",
         newBoard
       );
+      console.log("solverResult", solverResult);
+      setGameLog((prev) => [
+  ...prev,
+{
+  turn: prev.length + 1,
+  move: direction,
+
+  bestMove: solverResult?.bestMove,
+  confidence: solverResult?.confidence,
+  danger: solverResult?.dangerLevel,
+
+  rankings: solverResult?.rankings,
+  reasons: solverResult?.reasons,
+
+  boardBeforeMove: JSON.parse(JSON.stringify(state.board)),
+boardAfterMove: JSON.parse(JSON.stringify(newBoard)),
+}
+]);
       setState(updated);
     },
     [state]
@@ -228,17 +284,20 @@ solverResult.bestMove === "UP"
 >
   🧹 Clear
 </button>
+<button
+  onClick={() => {
+    navigator.clipboard.writeText(
+      JSON.stringify(gameLog, null, 2)
+    );
+
+    alert("Game Log Copied");
+  }}
+  className="bg-blue-700 hover:bg-blue-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
+>
+  📋 Log
+</button>
   
 </div>
-      {solverResult && (
-        <MoveRanking result={solverResult} onMoveClick={performMove} />
-      )}
-      <DangerMeter level={solverResult?.dangerLevel || "SAFE"} />
-      {error && (
-        <div className="bg-red-900/80 text-red-200 px-4 py-2 rounded-lg text-sm max-w-xs w-full text-center">
-          {error}
-        </div>
-      )}
     </main>
   );
 }

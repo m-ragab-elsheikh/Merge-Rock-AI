@@ -26,6 +26,7 @@ if (cached !== undefined) {
   let cornerBonus = 0;
   let clusterBonus = 0;
   let snakeBonus = 0;
+  let chainBonus = 0;
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       const val = board[r][c];
@@ -154,8 +155,29 @@ for (let i = 0; i < snakePath.length - 1; i++) {
     snakeBonus -= 300;
   }
 }
+for (let i = 0; i < snakePath.length - 1; i++) {
+  const current = Number(snakePath[i]);
+  const next = Number(snakePath[i + 1]);
+
+  if (
+    current > 0 &&
+    next > 0 &&
+    current - next === 1
+  ) {
+    chainBonus += 2500;
+  }
+}
   // Game over penalty
   const gameOverPenalty = isGameOver(board) ? -100000 : 0;
+  let spawnRiskPenalty = 0;
+
+if (emptyCells <= 1) {
+  spawnRiskPenalty = -30000;
+} else if (emptyCells <= 2) {
+  spawnRiskPenalty = -15000;
+} else if (emptyCells <= 3) {
+  spawnRiskPenalty = -5000;
+}
 
   // Weights (tuned heuristically)
 const score =
@@ -169,8 +191,10 @@ const score =
   cornerBonus +
   clusterBonus +
   snakeBonus +
+  chainBonus +
   stuckPenalty +
-  gameOverPenalty;
+  gameOverPenalty +
+  spawnRiskPenalty;
 
  scoreCache.set(
   cacheKey,
