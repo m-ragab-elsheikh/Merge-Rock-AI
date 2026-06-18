@@ -1,16 +1,10 @@
-import { Board, Direction, MoveEvaluation, SolverResult } from "@/types";
+import { Board, Direction, MoveEvaluation, SolverResult, DangerLevel } from "@/types";
 import { applyMove } from "./merge";
 import { isGameOver } from "./gameover";
 import { evaluateDanger } from "./danger";
 import { getPossibleMoves } from "./mobility";
 
 const DIRECTIONS: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
-
-// Chance nodes config
-const SPAWN_PROBABILITIES = [
-  { value: 1, probability: 0.9 },
-  { value: 2, probability: 0.1 }
-];
 
 // Perfect Snake Matrix to mathematically force a "Merge Pipeline" into the top-left
 const WEIGHT_MATRIX = [
@@ -80,22 +74,30 @@ function expectimax(board: Board, depth: number, isMaximizing: boolean): number 
     // Chance Node (Board spawns a random tile)
     if (emptyCells.length === 0) return evaluateLeaf(board, 0);
 
+    // حساب أعلى مربع لتحديد الأرقام العشوائية المسموح بها
+    const maxTile = Math.max(...board.flat());
+    const possibleSpawns = [{ value: 1, prob: 0.50 }, { value: 2, prob: 0.30 }];
+    
+    // إضافة احتمالات ظهور 3 و 4 كلما تقدمت اللعبة
+    if (maxTile >= 5) possibleSpawns.push({ value: 3, prob: 0.15 });
+    if (maxTile >= 8) possibleSpawns.push({ value: 4, prob: 0.05 });
+
     let expectedScore = 0;
     
-    // Speculation: JS Performance drop if we search all cells on empty boards.
-    // Optimization: Sample max 4 random cells for chance nodes if board is open.
-    const cellsToTest = emptyCells.length > 5 
-      ? emptyCells.sort(() => 0.5 - Math.random()).slice(0, 4) 
+    // Performance Optimization: لو البورد فاضية جداً، هنجرب 3 أماكن عشوائية بس عشان المتصفح ميهنجش
+    const cellsToTest = emptyCells.length > 4 
+      ? emptyCells.sort(() => 0.5 - Math.random()).slice(0, 3) 
       : emptyCells;
 
     const probMultiplier = emptyCells.length / cellsToTest.length;
 
     for (const cell of cellsToTest) {
-      for (const spawn of SPAWN_PROBABILITIES) {
+      for (const spawn of possibleSpawns) {
         const simBoard = cloneBoard(board);
         simBoard[cell.r][cell.c] = spawn.value as any;
         
-        const prob = (spawn.probability / emptyCells.length) * probMultiplier;
+        // حساب احتمالية ظهور هذا الرقم في هذا المكان
+        const prob = (spawn.prob / emptyCells.length) * probMultiplier;
         expectedScore += prob * expectimax(simBoard, depth - 1, true);
       }
     }
@@ -152,7 +154,7 @@ export function getBestMove(board: Board): SolverResult {
     rankings: evaluations,
     reasons: [
       `Searched ${searchDepth} steps ahead`,
-      `Analyzed future spawn probabilities`,
+      `Analyzed dynamic spawn probabilities (1 to 4)`,
     ],
   };
 }
