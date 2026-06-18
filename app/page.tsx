@@ -93,6 +93,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
       <div className="text-center mb-2">
+        <img src="/img/logo.jpg" alt="Merge Rock AI Logo" className="w-16 h-16 mx-auto mb-2" />
         <h1 className="text-3xl font-bold text-yellow-400 mt-2">Merge Rock AI</h1>
         <p className="text-sm text-slate-400 mt-1">Expectimax Engine Active</p>
         {isThinking && <p className="text-sm text-blue-400 mt-2 animate-pulse">AI is thinking...</p>}
