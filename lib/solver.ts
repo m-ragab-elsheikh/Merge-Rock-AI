@@ -35,36 +35,54 @@ function evaluateLeaf(board: Board, emptyCount: number): number {
 
   let snakeScore = 0;
   let smoothness = 0;
+  let maxTile = 0;
+  let maxTilePos = { r: 0, c: 0 };
+
+  // البحث عن أكبر رقم وتحديد مكانه
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) {
+      if (board[r][c] > maxTile) {
+        maxTile = board[r][c];
+        maxTilePos = { r, c };
+      }
+    }
+  }
 
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 4; c++) {
       const val = board[r][c];
       if (val > 0) {
         // 1. Snake Score: Reward large numbers in the correct matrix position
-        snakeScore += Math.pow(val, 3.5) * WEIGHT_MATRIX[r][c];
+        snakeScore += Math.pow(val, 4) * WEIGHT_MATRIX[r][c];
 
         // 2. Smoothness: Guide the AI step-by-step by rewarding adjacent similar values
         if (c < 3 && board[r][c + 1] > 0) {
           const diff = Math.abs(val - board[r][c + 1]);
-          if (diff === 0) smoothness += Math.pow(val, 3.5) * 20;
-          else if (diff === 1) smoothness += Math.pow(val, 2.5) * 10;
-          else smoothness -= Math.pow(diff, 2) * 30; // Penalize disjointed tiles
+          if (diff === 0) smoothness += Math.pow(val, 3) * 20;
+          else if (diff === 1) smoothness += Math.pow(val, 2) * 10;
+          else smoothness -= Math.pow(diff, 2) * 50; // Penalize disjointed tiles
         }
         if (r < 3 && board[r + 1][c] > 0) {
           const diff = Math.abs(val - board[r + 1][c]);
-          if (diff === 0) smoothness += Math.pow(val, 3.5) * 20;
-          else if (diff === 1) smoothness += Math.pow(val, 2.5) * 10;
-          else smoothness -= Math.pow(diff, 2) * 30;
+          if (diff === 0) smoothness += Math.pow(val, 3) * 20;
+          else if (diff === 1) smoothness += Math.pow(val, 2) * 10;
+          else smoothness -= Math.pow(diff, 2) * 50;
         }
       }
     }
   }
 
-  // 3. Survival: Non-linear empty bonus
-  // Math.pow(emptyCount, 3) makes the AI comfortable when empty > 4, but panic at 2 or 1
-  const emptyBonus = Math.pow(emptyCount, 3) * 15000;
+  // 3. CORNER LOCK (القفل الصارم للزاوية): 
+  // إذا لم يكن أكبر رقم في الزاوية (0,0)، قم بتطبيق عقوبة خرافية
+  let cornerPenalty = 0;
+  if (maxTilePos.r !== 0 || maxTilePos.c !== 0) {
+    cornerPenalty = -Math.pow(maxTile, 6) * 10000; 
+  }
 
-  return snakeScore + smoothness + emptyBonus;
+  // 4. Survival: Non-linear empty bonus
+  const emptyBonus = Math.pow(emptyCount, 3.5) * 25000;
+
+  return snakeScore + smoothness + emptyBonus + cornerPenalty;
 }
 
 function expectimax(board: Board, depth: number, isMaximizing: boolean): number {
@@ -194,7 +212,7 @@ export function getBestMove(board: Board): SolverResult {
     rankings: evaluations,
     reasons: [
       `Searched ${searchDepth} steps ahead`,
-      `Applied Smoothness to build long merge chains`,
+      `Applied Corner Lock & Strict Smoothness`,
     ],
   };
 }
