@@ -13,7 +13,7 @@ export function parseBoardFromString(input: string): { board: Board; error?: str
       return { board: [] as unknown as Board, error: `Line ${i + 1} must have exactly 4 numbers.` };
     }
     for (const n of nums) {
-      if (![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].includes(n)) {
+      if (![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].includes(n)) {
         return { board: [] as unknown as Board, error: "Values must be 0-10." };
       }
     }

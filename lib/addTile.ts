@@ -9,9 +9,9 @@ export function addTile(
   if (row < 1 || row > 4 || col < 1 || col > 4) {
     return { board, error: "Row and column must be between 1 and 4." };
   }
-  if (value < 1 || value > 10) {
-    return { board, error: "Value must be between 1 and 10." };
-  }
+if (value < 1 || value > 11) {
+  return { board, error: "Value must be between 1 and 11." };
+}
   if (board[row - 1][col - 1] !== 0) {
     return { board, error: "Cell is not empty." };
   }

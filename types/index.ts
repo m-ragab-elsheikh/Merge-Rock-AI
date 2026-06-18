@@ -1,4 +1,4 @@
-export type TileValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+export type TileValue = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
 export type Board = TileValue[][]; // 4x4
 
 export type Direction = "UP" | "DOWN" | "LEFT" | "RIGHT";
@@ -32,6 +32,7 @@ export interface SolverResult {
   rankings: MoveEvaluation[];
   reasons: string[];
 }
+
 export const TILE_COLORS: Record<TileValue, string> = {
   0: "bg-tile-0",
   1: "bg-tile-1 text-white",
@@ -44,4 +45,5 @@ export const TILE_COLORS: Record<TileValue, string> = {
   8: "bg-tile-8 text-black",
   9: "bg-tile-9 text-black",
   10: "bg-tile-10 text-black",
+  11: "bg-tile-10 text-white border-2 border-yellow-400", // New style for 11
 };

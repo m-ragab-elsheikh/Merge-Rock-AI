@@ -1,13 +1,13 @@
 import { Board, TileValue } from "@/types";
 
-// Merge a single row to the left (used for LEFT and RIGHT by reversing)
+// دمج صف واحد لليسار (يُستخدم لجميع الاتجاهات بعد عكس أو تدوير المصفوفة)
 export function mergeRowLeft(row: TileValue[]): {
   newRow: TileValue[];
   score: number;
   moved: boolean;
   merged: boolean;
 } {
-  // Remove zeros
+  // إزالة الأصفار والاحتفاظ بالمربعات الممتلئة فقط
   const nonZero = row.filter((v) => v !== 0) as TileValue[];
   const result: TileValue[] = [];
   let merged = false;
@@ -15,41 +15,41 @@ export function mergeRowLeft(row: TileValue[]): {
   let i = 0;
 
   while (i < nonZero.length) {
-    if (i < nonZero.length - 1 && nonZero[i] === nonZero[i + 1]) {
+    if (i < nonZero.length - 1 && nonZero[i] === nonZero[i + 1] && nonZero[i] !== 11) {
       const mergedValue = mergeTiles(nonZero[i], nonZero[i + 1]);
       result.push(mergedValue);
       i += 2;
       merged = true;
-      moved = true;
     } else {
       result.push(nonZero[i]);
       i++;
     }
   }
 
-  // Fill with zeros
+  // ملء باقي الخانات بالأصفار لتثبيت طول الصف عند 4
   while (result.length < 4) {
     result.push(0 as TileValue);
   }
 
-  // Check if any tile moved (different position)
-  const originalRow = [...row];
-  // Compare only non-zero positions
-const finalRow = [...result];
-
-moved =
-  JSON.stringify(originalRow) !==
-  JSON.stringify(finalRow);
+  // تحسين فائق للسرعة: مقارنة العناصر عنصر بعنصر بدلاً من JSON.stringify البطيئة
+  for (let j = 0; j < 4; j++) {
+    if (row[j] !== result[j]) {
+      moved = true;
+      break;
+    }
+  }
   
   return { newRow: result as TileValue[], score: 0, moved, merged };
 }
 
+// دالة دمج المربعات وحل مشكلة الحد الأقصى
 function mergeTiles(a: TileValue, b: TileValue): TileValue {
-  if (a === 10 && b === 10) return 10;
+  // إصلاح الكارثة: الآن دمج 10 مع 10 ينتج عنه المستوى 11 بنجاح
+  if (a === 10 && b === 10) return 11 as TileValue;
   return (a + 1) as TileValue;
 }
 
-// Apply a move in a given direction
+// تطبيق الحركة في الاتجاه المطلوب محاكاةً للمستقبل
 export function applyMove(board: Board, direction: "UP" | "DOWN" | "LEFT" | "RIGHT"): {
   newBoard: Board;
   moved: boolean;

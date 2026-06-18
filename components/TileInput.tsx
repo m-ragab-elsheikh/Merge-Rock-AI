@@ -15,8 +15,8 @@ export function TileInput({ onAddTile, disabled }: TileInputProps) {
   const [error, setError] = useState("");
 
   const handleAdd = () => {
-    if (value < 1 || value > 10) {
-      setError("Value must be 1-10");
+    if (value < 1 || value > 11) {
+      setError("Value must be 1-11");
       return;
     }
     if (row < 1 || row > 4 || col < 1 || col > 4) {
@@ -36,7 +36,7 @@ export function TileInput({ onAddTile, disabled }: TileInputProps) {
           <input
             type="number"
             min={1}
-            max={10}
+            max={11}
             value={value}
             onChange={(e) => setValue(Number(e.target.value))}
             className="w-full bg-slate-700 text-white rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

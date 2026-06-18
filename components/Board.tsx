@@ -54,7 +54,7 @@ export function Board({
   autoFocus
   type="number"
   min={1}
-  max={10}
+  max={11}
       defaultValue={
         cell === 0 ? "" : cell
       }
@@ -67,7 +67,7 @@ const value =
   text === ""
     ? 0
     : Math.min(
-        10,
+        11,
         Math.max(
           1,
           Number(text)
@@ -95,7 +95,7 @@ const value =
   text === ""
     ? 0
     : Math.min(
-        10,
+        11,
         Math.max(
           1,
           Number(text)

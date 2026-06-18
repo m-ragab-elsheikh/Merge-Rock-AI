@@ -1,30 +1,32 @@
-
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Board } from "@/components/Board";
-import { GameState, TileValue, SolverResult } from "@/types";
-import { getBestMove } from "@/lib/solver";
+import { GameState, SolverResult } from "@/types";
 import { initialState, addMoveToHistory, undoLast } from "@/lib/history";
 import { applyMove } from "@/lib/merge";
-import { addTile } from "@/lib/addTile";
-import { parseBoardFromString } from "@/lib/emergencySync";
-
 
 const STORAGE_KEY = "merge-solver-ai-state";
 
 export default function HomePage() {
-  const [state, setState] = useState<GameState>(
-    initialState()
-  );
-
-  const [solverResult, setSolverResult] =
-    useState<SolverResult | null>(null);
-
+  const [state, setState] = useState<GameState>(initialState());
+  const [solverResult, setSolverResult] = useState<SolverResult | null>(null);
   const [error, setError] = useState("");
+  const [isThinking, setIsThinking] = useState(false);
+  
+  const workerRef = useRef<Worker | null>(null);
+
+  // Initialize Web Worker
+  useEffect(() => {
+    workerRef.current = new Worker(new URL("@/lib/solver.worker.ts", import.meta.url));
+    workerRef.current.onmessage = (e: MessageEvent<SolverResult>) => {
+      setSolverResult(e.data);
+      setIsThinking(false);
+    };
+    return () => workerRef.current?.terminate();
+  }, []);
 
   // Load from localStorage
   useEffect(() => {
-
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -43,11 +45,11 @@ export default function HomePage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  // Recalculate solver on board change
+  // Request move calculation from Worker
   useEffect(() => {
-    if (state.board) {
-      const result = getBestMove(state.board);
-      setSolverResult(result);
+    if (state.board && workerRef.current) {
+      setIsThinking(true);
+      workerRef.current.postMessage({ board: state.board });
     }
   }, [state.board]);
 
@@ -59,16 +61,11 @@ export default function HomePage() {
         return;
       }
       setError("");
-      const updated = addMoveToHistory(
-        state,
-        `MOVE_${direction}` as "MOVE_UP",
-        newBoard
-      );
+      const updated = addMoveToHistory(state, `MOVE_${direction}`, newBoard);
       setState(updated);
     },
     [state]
   );
-
 
   const handleUndo = useCallback(() => {
     const previous = undoLast(state);
@@ -87,65 +84,35 @@ export default function HomePage() {
       [0, 0, 0, 0],
       [0, 0, 0, 0],
     ] as any;
-
-    setState({
-      board: emptyBoard,
-      history: [],
-    });
-
+    setState({ board: emptyBoard, history: [] });
     setError("");
   }, []);
 
-  const hasValidMove =
-    solverResult &&
-    solverResult.rankings.length > 0;
+  const hasValidMove = solverResult && solverResult.rankings.length > 0 && !isThinking;
 
   return (
-    <  main
-
-      className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6"
-    >
-
-
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 flex flex-col items-center gap-6">
       <div className="text-center mb-2">
-        <img
-          src="/img/Mahmoud_Image.jpg"
-          alt="Merge Rock AI"
-          className="w-24 h-24 object-contain mx-auto"
-        />
-        <h1 className="text-3xl font-bold text-yellow-400 mt-2">
-          Merge Rock AI
-        </h1>
-        <p className="text-sm text-slate-400 mt-1">
-          Rock Animal Merge Event Helper & AI Solver
-        </p>
+        <h1 className="text-3xl font-bold text-yellow-400 mt-2">Merge Rock AI</h1>
+        <p className="text-sm text-slate-400 mt-1">Expectimax Engine Active</p>
+        {isThinking && <p className="text-sm text-blue-400 mt-2 animate-pulse">AI is thinking...</p>}
       </div>
+
       <Board
         board={state.board}
         bestMove={solverResult?.bestMove}
         onCellEdit={(row, col, value) => {
-          const newBoard =
-            state.board.map((r) => [...r]);
-
+          const newBoard = state.board.map((r) => [...r]);
           newBoard[row][col] = value as any;
-
-          setState((prev) => ({
-            ...prev,
-            board: newBoard,
-          }));
+          setState((prev) => ({ ...prev, board: newBoard }));
         }}
       />
-      <div className="flex flex-col items-center gap-2">
 
+      <div className="flex flex-col items-center gap-2">
         <button
           onClick={() => performMove("UP")}
           disabled={!hasValidMove}
-          className={`${solverResult &&
-              solverResult.rankings.length > 0 &&
-              solverResult.bestMove === "UP"
-              ? "bg-green-600 ring-2 ring-green-300 scale-105"
-              : "bg-slate-700 hover:bg-slate-600"
-            } text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
+          className={`${solverResult?.bestMove === "UP" ? "bg-green-600 ring-2 ring-green-300 scale-105" : "bg-slate-700 hover:bg-slate-600"} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           ⬆ UP
         </button>
@@ -154,25 +121,14 @@ export default function HomePage() {
           <button
             onClick={() => performMove("LEFT")}
             disabled={!hasValidMove}
-            className={`${solverResult &&
-                solverResult.rankings.length > 0 &&
-                solverResult.bestMove === "LEFT"
-                ? "bg-green-600 ring-2 ring-green-300 scale-105"
-                : "bg-slate-700 hover:bg-slate-600"
-              } text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
+            className={`${solverResult?.bestMove === "LEFT" ? "bg-green-600 ring-2 ring-green-300 scale-105" : "bg-slate-700 hover:bg-slate-600"} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
           >
             ⬅ LEFT
           </button>
-
           <button
             onClick={() => performMove("RIGHT")}
             disabled={!hasValidMove}
-            className={`${solverResult &&
-                solverResult.rankings.length > 0 &&
-                solverResult.bestMove === "RIGHT"
-                ? "bg-green-600 ring-2 ring-green-300 scale-105"
-                : "bg-slate-700 hover:bg-slate-600"
-              } text-white px-4 py-3 rounded-lg font-semibold transition-all  disabled:opacity-40 disabled:cursor-not-allowed`}
+            className={`${solverResult?.bestMove === "RIGHT" ? "bg-green-600 ring-2 ring-green-300 scale-105" : "bg-slate-700 hover:bg-slate-600"} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
           >
             ➡ RIGHT
           </button>
@@ -181,42 +137,17 @@ export default function HomePage() {
         <button
           onClick={() => performMove("DOWN")}
           disabled={!hasValidMove}
-          className={`${solverResult &&
-              solverResult.rankings.length > 0 &&
-              solverResult.bestMove === "DOWN"
-              ? "bg-green-600 ring-2 ring-green-300 scale-105"
-              : "bg-slate-700 hover:bg-slate-600"
-            } text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
-
+          className={`${solverResult?.bestMove === "DOWN" ? "bg-green-600 ring-2 ring-green-300 scale-105" : "bg-slate-700 hover:bg-slate-600"} text-white px-4 py-3 rounded-lg font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed`}
         >
           ⬇ DOWN
         </button>
-
       </div>
+
       <div className="flex justify-center gap-4 mt-3">
-        <button
-          onClick={handleUndo}
-          disabled={state.history.length === 0}
-          className="
-      bg-slate-700
-      hover:bg-slate-600
-      disabled:opacity-50
-      disabled:cursor-not-allowed
-      text-white
-      w-24
-      py-3
-      rounded-lg
-      font-semibold
-      shadow-lg
-      transition
-    "
-        >
+        <button onClick={handleUndo} disabled={state.history.length === 0 || isThinking} className="bg-slate-700 hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition">
           ↶ Undo
         </button>
-        <button
-          onClick={handleClearBoard}
-          className="bg-red-700 hover:bg-red-600 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition"
-        >
+        <button onClick={handleClearBoard} disabled={isThinking} className="bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white w-24 py-3 rounded-lg font-semibold shadow-lg transition">
           🧹 Clear
         </button>
       </div>
